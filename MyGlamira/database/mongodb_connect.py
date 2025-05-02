@@ -1,7 +1,6 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from config.database_config import get_database_config
-from database.schema_manager import create_mongodb_schema, validate_mongodb_schema
 
 
 class MongoDBConnect:
@@ -35,7 +34,7 @@ class MongoDBConnect:
 
 
 def query_product_views(db):
-    # Query to retrieve specific fields, limited to 5 documents
+    """Process all documents and log progress every 500,000 records without printing document contents."""
     projection = {
         "_id": 1,
         "time_stamp": 1,
@@ -45,24 +44,20 @@ def query_product_views(db):
         "product_id": 1,
         "option": 1
     }
-    documents = db.summary.find({}, projection).limit()
-    return list(documents)
+    cursor = db.summary.find({}, projection)
 
+    records_processed = 0
 
-def main():
-    configMongo = get_database_config()
-    with MongoDBConnect(configMongo["mongodb"].uri, configMongo["mongodb"].db_name) as mongo_client:
-        db = mongo_client.db
-        # Ensure schema exists and validate
-        create_mongodb_schema(db)
-        validate_mongodb_schema(db)
+    try:
+        for _ in cursor:
+            records_processed += 1
 
-        # Query and display documents
-        documents = query_product_views(db)
-        print("Retrieved documents:")
-        for doc in documents:
-            print(doc)
+            # Print progress every 500,000 records
+            if records_processed % 500000 == 0:
+                print(f"Processed {records_processed} records")
 
+    finally:
+        cursor.close()
 
-if __name__ == "__main__":
-    main()
+    print(f"Total records processed: {records_processed}")
+    return records_processed

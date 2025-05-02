@@ -2,7 +2,6 @@ from pymongo import MongoClient
 from pymongo.errors import CollectionInvalid
 
 def create_mongodb_schema(db):
-    # Check if collection exists; create it with schema only if it doesn't
     if "summary" not in db.list_collection_names():
         try:
             db.create_collection("summary", validator={
@@ -44,7 +43,6 @@ def create_mongodb_schema(db):
                     }
                 }
             })
-            # Create an index on product_id
             db.summary.create_index("product_id")
             print("Created summary collection with schema")
         except CollectionInvalid:
@@ -57,10 +55,8 @@ def validate_mongodb_schema(db):
     print("Collections:", collections)
     if "summary" not in collections:
         raise ValueError("Missing summary collection in MongoDB")
-    # Check for documents, but don't fail if empty
-    document_count = db.summary.count_documents({})
-    if document_count == 0:
+    if db.summary.find_one() is None:
         print("Warning: summary collection is empty")
     else:
-        print(f"summary collection contains {document_count} documents")
+        print("summary collection contains documents")
     print("Validated schema for summary collection")
