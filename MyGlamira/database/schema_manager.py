@@ -7,7 +7,7 @@ def create_mongodb_schema(db):
             db.create_collection("summary", validator={
                 "$jsonSchema": {
                     "bsonType": "object",
-                    "required": ["_id", "time_stamp", "current_url", "collection", "product_id"],
+                    "required": ["_id", "time_stamp", "current_url", "collection"],
                     "properties": {
                         "_id": {"bsonType": ["objectId", "string"]},
                         "time_stamp": {"bsonType": ["int", "long"]},
@@ -27,16 +27,41 @@ def create_mongodb_schema(db):
                         "utm_source": {"bsonType": ["bool", "string", "null"]},
                         "utm_medium": {"bsonType": ["bool", "string", "null"]},
                         "collection": {"bsonType": "string"},
-                        "product_id": {"bsonType": "string"},
+                        "product_id": {"bsonType": ["string", "null"]},  # Giữ để tương thích dữ liệu cũ
                         "option": {
                             "bsonType": ["array", "null"],
                             "items": {
                                 "bsonType": "object",
                                 "properties": {
                                     "option_label": {"bsonType": ["string", "null"]},
-                                    "option_id": {"bsonType": ["string", "null"]},
+                                    "option_id": {"bsonType": ["string", "int", "null"]},
                                     "value_label": {"bsonType": ["string", "null"]},
-                                    "value_id": {"bsonType": ["string", "null"]}
+                                    "value_id": {"bsonType": ["string", "int", "null"]}
+                                }
+                            }
+                        },
+                        "cart_products": {
+                            "bsonType": ["array", "null"],
+                            "items": {
+                                "bsonType": "object",
+                                "required": ["product_id", "amount", "price", "currency"],
+                                "properties": {
+                                    "product_id": {"bsonType": ["int", "string"]},
+                                    "amount": {"bsonType": ["int"]},
+                                    "price": {"bsonType": ["string"]},  # Giữ string vì giá trị như "30,00"
+                                    "currency": {"bsonType": ["string"]},
+                                    "option": {
+                                        "bsonType": ["array", "null"],
+                                        "items": {
+                                            "bsonType": "object",
+                                            "properties": {
+                                                "option_label": {"bsonType": ["string", "null"]},
+                                                "option_id": {"bsonType": ["int", "string", "null"]},
+                                                "value_label": {"bsonType": ["string", "null"]},
+                                                "value_id": {"bsonType": ["int", "string", "null"]}
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
